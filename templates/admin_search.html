@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-box wide">
+        <h2>Search</h2>
+        <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+
+        <form method="GET">
+            <label>Search by name or ID</label>
+            <input type="text" name="q" value="{{ query }}">
+
+            <label>Type</label>
+            <select name="type">
+                <option value="treks" {% if search_type == 'treks' %}selected{% endif %}>Treks</option>
+                <option value="staff" {% if search_type == 'staff' %}selected{% endif %}>Staff</option>
+                <option value="users" {% if search_type == 'users' %}selected{% endif %}>Users</option>
+            </select>
+            <button type="submit">Search</button>
+        </form>
+
+        {% if query %}
+        <table>
+            <tr><th>ID</th><th>Name</th><th>Details</th></tr>
+            {% for r in results %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td>{{ r.trek_name if search_type == 'treks' else r.name }}</td>
+                <td>
+                    {% if search_type == 'treks' %}{{ r.location }} — {{ r.status }}
+                    {% else %}{{ r.email }} — {{ r.status }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</body>
+</html>

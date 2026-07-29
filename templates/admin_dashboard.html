@@ -5,10 +5,24 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="dashboard-box">
+    <div class="dashboard-box wide">
         <h2>Welcome, {{ name }} (Admin)</h2>
-        <p>Admin dashboard — features coming in later milestones.</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
+
+        <div class="stats">
+            <div class="stat-card">Total Treks<br><strong>{{ stats.total_treks }}</strong></div>
+            <div class="stat-card">Total Users<br><strong>{{ stats.total_users }}</strong></div>
+            <div class="stat-card">Total Staff<br><strong>{{ stats.total_staff }}</strong></div>
+            <div class="stat-card">Total Bookings<br><strong>{{ stats.total_bookings }}</strong></div>
+        </div>
+
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin_treks') }}">Manage Treks</a>
+            <a href="{{ url_for('admin_staff') }}">Manage Staff</a>
+            <a href="{{ url_for('admin_users') }}">Manage Users</a>
+            <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+            <a href="{{ url_for('admin_search') }}">Search</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
     </div>
 </body>
 </html>

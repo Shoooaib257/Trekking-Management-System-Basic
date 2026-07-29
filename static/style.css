@@ -35,10 +35,10 @@ input, select {
 button {
     width: 100%;
     padding: 10px;
-    margin-top: 15px;
-    background: #2e7d32;
+    margin-top: 10px;
+    background: rgb(2, 122, 16);
     color: white;
-    border: none;
+    border: 1px solid black;
     border-radius: 4px;
     cursor: pointer;
 }
@@ -48,4 +48,62 @@ button {
     padding: 0;
     color: #c0392b;
     font-size: 13px;
+}
+
+.wide { 
+width: 700px; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 13px;
+}
+th { background: #f0f0f0; }
+
+.stats {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+.stat-card {
+    flex: 1;
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.admin-nav a {
+    padding: 5px;
+    display: inline-block;
+    margin: 5px 8px 5px 0;
+    border-radius: 4px;
+    background: #3e5779;
+}
+
+.dashboard-box  a { 
+            text-decoration: none; 
+            background: #3e5779;
+            color: white;
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+button {
+    width: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0 2px;
+}
+
+button:disabled {
+    background: #a5a5a5;
+    cursor: not-allowed;
+    opacity: 0.6;
 }

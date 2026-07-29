@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Staff</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-box wide">
+        <h2>Manage Trek Staff</h2>
+        <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <table>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr>
+            {% for s in staff %}
+            <tr>
+                <td>{{ s.id }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.email }}</td>
+                <td>{{ s.staff_profile.phone if s.staff_profile else '-' }}</td>
+                <td>{{ s.status }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin_staff_status', user_id=s.id, action='approve') }}" style="display:inline">
+                        <button type="submit" {% if s.status in ['Approved', 'Deactivated'] %}disabled{% endif %}>Approve</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_staff_status', user_id=s.id, action='blacklist') }}" style="display:inline">
+                        <button type="submit" {% if s.status == 'Blacklisted' %}disabled{% endif %}>Blacklist</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_staff_status', user_id=s.id, action='deactivate') }}" style="display:inline">
+                        <button type="submit" {% if s.status == 'Deactivated' %}disabled{% endif %}>Deactivate</button>
+                    </form>
+                    {% if s.status == 'Deactivated' %}
+                    <form method="POST" action="{{ url_for('admin_staff_status', user_id=s.id, action='approve') }}" style="display:inline">
+                        <button type="submit">Reactivate</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

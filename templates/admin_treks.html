@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Treks</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-box wide">
+        <h2>Manage Treks</h2>
+        <a href="{{ url_for('admin_add_trek') }}">+ Add New Trek</a>
+        <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <table>
+            <tr>
+                <th>ID</th><th>Name</th><th>Location</th><th>Difficulty</th>
+                <th>Slots</th><th>Assigned Staff</th><th>Status</th><th>Actions</th>
+            </tr>
+            {% for trek in treks %}
+            <tr>
+                <td>{{ trek.id }}</td>
+                <td>{{ trek.trek_name }}</td>
+                <td>{{ trek.location }}</td>
+                <td>{{ trek.difficulty }}</td>
+                <td>{{ trek.available_slots }}</td>
+                <td>{{ trek.assigned_staff.name if trek.assigned_staff else '-' }}</td>
+                <td>{{ trek.status }}</td>
+                <td>
+                    <a href="{{ url_for('admin_edit_trek', trek_id=trek.id) }}">Edit</a>
+                    <form method="POST" action="{{ url_for('admin_delete_trek', trek_id=trek.id) }}" style="display:inline">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
