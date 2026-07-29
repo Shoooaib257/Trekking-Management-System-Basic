@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-box">
+        <h2>Welcome, {{ name }} (Trek Staff)</h2>
+        <p>Staff dashboard — features coming in later milestones.</p>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="form-box">
+        <h2>Trekking Management Application</h2>
+        <h3>Register</h3>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flash">
+            {% for msg in messages %}
+              <li>{{ msg }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label>Full Name</label>
+            <input type="text" name="name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <label>Register as</label>
+            <select name="role" id="role" onchange="document.getElementById('staffFields').style.display = this.value === 'Trek Staff' ? 'block' : 'none'">
+                <option value="Trekker">User (Trekker)</option>
+                <option value="Trek Staff">Trek Staff</option>
+            </select>
+
+            <div id="staffFields" style="display:none">
+                <label>Phone</label>
+                <input type="text" name="phone">
+
+                <label>Experience</label>
+                <input type="text" name="experience">
+
+                <label>Specialization</label>
+                <input type="text" name="specialization">
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+    </div>
+</body>
+</html>
