@@ -5,10 +5,34 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="dashboard-box">
+    <div class="dashboard-box wide">
         <h2>Welcome, {{ name }} (Trek Staff)</h2>
-        <p>Staff dashboard — features coming in later milestones.</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
+
+        <nav class="admin-nav">
+            <a href="{{ url_for('staff_profile') }}">Edit Profile</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <h3>My Assigned Treks</h3>
+        <table>
+            <tr><th>Trek Name</th><th>Location</th><th>Slots</th><th>Registered</th><th>Status</th><th>Actions</th></tr>
+            {% for row in trek_data %}
+            <tr>
+                <td>{{ row.trek.trek_name }}</td>
+                <td>{{ row.trek.location }}</td>
+                <td>{{ row.trek.available_slots }}</td>
+                <td>{{ row.trekker_count }}</td>
+                <td>{{ row.trek.status }}</td>
+                <td><a href="{{ url_for('staff_trek_detail', trek_id=row.trek.id) }}">Manage</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No treks assigned yet.</td></tr>
+            {% endfor %}
+        </table>
     </div>
 </body>
 </html>

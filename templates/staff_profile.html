@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="form-box">
+        <h2>Edit Profile</h2>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label>Name</label>
+            <input type="text" name="name" value="{{ user.name }}" required>
+
+            <label>Phone</label>
+            <input type="text" name="phone" value="{{ profile.phone if profile else '' }}">
+
+            <label>Experience</label>
+            <input type="text" name="experience" value="{{ profile.experience if profile else '' }}">
+
+            <label>Specialization</label>
+            <input type="text" name="specialization" value="{{ profile.specialization if profile else '' }}">
+
+            <button type="submit">Save</button>
+        </form>
+        <a href="{{ url_for('staff_dashboard') }}">Back to Dashboard</a>
+    </div>
+</body>
+</html>

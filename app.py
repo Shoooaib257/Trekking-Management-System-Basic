@@ -4,7 +4,6 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
-from models import db, User, StaffProfile
 
 def create_app():
     app = Flask(__name__)
@@ -288,6 +287,90 @@ def admin_bookings():
     bookings = Booking.query.all()
     return render_template("admin_bookings.html", bookings=bookings)
 
+# ---------- Staff: dashboard ----------
+@app.route("/staff/dashboard")
+@role_required("Trek Staff")
+def staff_dashboard():
+    treks = Trek.query.filter_by(assigned_staff_id=session["user_id"]).all()
+    trek_data = []
+    for trek in treks:
+        count = Booking.query.filter_by(trek_id=trek.id, booking_status="Booked").count()
+        trek_data.append({"trek": trek, "trekker_count": count})
+    return render_template("staff_dashboard.html", name=session.get("name"), trek_data=trek_data)
+
+
+# ---------- Staff: profile ----------
+@app.route("/staff/profile", methods=["GET", "POST"])
+@role_required("Trek Staff")
+def staff_profile():
+    user = User.query.get(session["user_id"])
+    profile = user.staff_profile
+
+    if request.method == "POST":
+        user.name = request.form["name"]
+        if profile:
+            profile.phone = request.form.get("phone", "")
+            profile.experience = request.form.get("experience", "")
+            profile.specialization = request.form.get("specialization", "")
+        db.session.commit()
+        session["name"] = user.name
+        flash("Profile updated.")
+        return redirect(url_for("staff_profile"))
+
+    return render_template("staff_profile.html", user=user, profile=profile)
+
+
+# ---------- Staff: trek ownership check ----------
+def owns_trek_or_404(trek_id):
+    trek = Trek.query.get(trek_id)
+    if trek is None:
+        flash("That trek doesn't exist.")
+        return None
+    if trek.assigned_staff_id != session["user_id"]:
+        flash("You are not assigned to this trek.")
+        return None
+    return trek
+
+
+# ---------- Staff: trek detail, slots/status update, participants ----------
+@app.route("/staff/treks/<int:trek_id>", methods=["GET", "POST"])
+@role_required("Trek Staff")
+def staff_trek_detail(trek_id):
+    trek = owns_trek_or_404(trek_id)
+    if trek is None:
+        return redirect(url_for("staff_dashboard"))
+
+    if request.method == "POST":
+        trek.available_slots = int(request.form["available_slots"])
+        trek.status = request.form["status"]
+        db.session.commit()
+        flash("Trek updated.")
+        return redirect(url_for("staff_trek_detail", trek_id=trek.id))
+
+    bookings = Booking.query.filter_by(trek_id=trek.id).all()
+    return render_template("staff_trek_detail.html", trek=trek, bookings=bookings)
+
+
+# ---------- Staff: update a participant's booking status ----------
+@app.route("/staff/treks/<int:trek_id>/participant/<int:booking_id>/<action>", methods=["POST"])
+@role_required("Trek Staff")
+def staff_update_participant(trek_id, booking_id, action):
+    trek = owns_trek_or_404(trek_id)
+    if trek is None:
+        return redirect(url_for("staff_dashboard"))
+
+    booking = Booking.query.get_or_404(booking_id)
+    if booking.trek_id != trek.id:
+        flash("Invalid booking for this trek.")
+        return redirect(url_for("staff_trek_detail", trek_id=trek.id))
+
+    if action == "complete":
+        booking.booking_status = "Completed"
+    elif action == "cancel":
+        booking.booking_status = "Cancelled"
+    db.session.commit()
+    flash("Participant status updated.")
+    return redirect(url_for("staff_trek_detail", trek_id=trek.id))
 
 if __name__ == "__main__":
     with app.app_context():

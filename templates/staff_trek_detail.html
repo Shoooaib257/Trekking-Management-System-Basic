@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Trek</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-box wide">
+        <h2>{{ trek.trek_name }}</h2>
+        <a href="{{ url_for('staff_dashboard') }}">Back to Dashboard</a>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <h3>Update Trek</h3>
+        <form method="POST">
+            <label>Available Slots</label>
+            <input type="number" name="available_slots" value="{{ trek.available_slots }}" required>
+
+            <label>Status</label>
+            <select name="status">
+                {% for st in ['Open', 'Closed', 'Started', 'Ongoing', 'Completed'] %}
+                <option value="{{ st }}" {% if trek.status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Save</button>
+        </form>
+
+        <h3>Registered Participants</h3>
+        <table>
+            <tr><th>Booking ID</th><th>User</th><th>Status</th><th>Payment</th><th>Actions</th></tr>
+            {% for b in bookings %}
+            <tr>
+                <td>{{ b.id }}</td>
+                <td>{{ b.user.name }}</td>
+                <td>{{ b.booking_status }}</td>
+                <td>{{ b.payment_status }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('staff_update_participant', trek_id=trek.id, booking_id=b.id, action='complete') }}" style="display:inline">
+                        <button type="submit" {% if b.booking_status == 'Completed' %}disabled{% endif %}>Mark Completed</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('staff_update_participant', trek_id=trek.id, booking_id=b.id, action='cancel') }}" style="display:inline">
+                        <button type="submit" {% if b.booking_status == 'Cancelled' %}disabled{% endif %}>Cancel</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No participants registered yet.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
