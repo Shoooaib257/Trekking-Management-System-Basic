@@ -17,7 +17,7 @@
             <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr>
             {% for s in staff %}
             <tr>
-                <td>{{ s.id }}</td>
+                <td>{{ s.staff_profile.id if s.staff_profile else '-' }}</td>
                 <td>{{ s.name }}</td>
                 <td>{{ s.email }}</td>
                 <td>{{ s.staff_profile.phone if s.staff_profile else '-' }}</td>

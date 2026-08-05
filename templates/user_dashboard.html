@@ -5,10 +5,34 @@
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
-    <div class="dashboard-box">
+    <div class="dashboard-box wide">
         <h2>Welcome, {{ name }} (Trekker)</h2>
-        <p>User dashboard — features coming in later milestones.</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
+
+        <nav class="admin-nav">
+            <a href="{{ url_for('user_treks') }}">Browse Treks</a>
+            <a href="{{ url_for('user_profile') }}">Edit Profile</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <h3>My Bookings / Trekking History</h3>
+        <table>
+            <tr><th>Trek</th><th>Location</th><th>Booking Date</th><th>Status</th><th>Payment</th></tr>
+            {% for b in bookings %}
+            <tr>
+                <td>{{ b.trek.trek_name }}</td>
+                <td>{{ b.trek.location }}</td>
+                <td>{{ b.booking_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ b.booking_status }}</td>
+                <td>{{ b.payment_status }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No bookings yet.</td></tr>
+            {% endfor %}
+        </table>
     </div>
 </body>
 </html>

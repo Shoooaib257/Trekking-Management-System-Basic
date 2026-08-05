@@ -372,6 +372,100 @@ def staff_update_participant(trek_id, booking_id, action):
     flash("Participant status updated.")
     return redirect(url_for("staff_trek_detail", trek_id=trek.id))
 
+# ---------- User: dashboard ----------
+@app.route("/user/dashboard")
+@role_required("Trekker")
+def user_dashboard():
+    booked_trek_ids = [b.trek_id for b in Booking.query.filter_by(
+        user_id=session["user_id"], booking_status="Booked"
+    ).all()]
+    bookings = Booking.query.filter_by(user_id=session["user_id"]).all()
+    return render_template(
+        "user_dashboard.html",
+        name=session.get("name"),
+        bookings=bookings,
+        booked_trek_ids=booked_trek_ids,
+    )
+
+
+# ---------- User: profile ----------
+@app.route("/user/profile", methods=["GET", "POST"])
+@role_required("Trekker")
+def user_profile():
+    user = User.query.get(session["user_id"])
+
+    if request.method == "POST":
+        user.name = request.form["name"]
+        db.session.commit()
+        session["name"] = user.name
+        flash("Profile updated.")
+        return redirect(url_for("user_profile"))
+
+    return render_template("user_profile.html", user=user)
+
+
+# ---------- User: browse treks (search/filter) ----------
+@app.route("/user/treks")
+@role_required("Trekker")
+def user_treks():
+    difficulty = request.args.get("difficulty", "")
+    location = request.args.get("location", "")
+
+    query = Trek.query.filter_by(status="Open")
+
+    if difficulty:
+        query = query.filter(Trek.difficulty == difficulty)
+    if location:
+        query = query.filter(Trek.location.ilike(f"%{location}%"))
+
+    treks = query.all()
+
+    booked_trek_ids = [b.trek_id for b in Booking.query.filter_by(
+        user_id=session["user_id"], booking_status="Booked"
+    ).all()]
+
+    return render_template(
+        "user_treks.html",
+        treks=treks,
+        difficulty=difficulty,
+        location=location,
+        booked_trek_ids=booked_trek_ids,
+    )
+
+
+# ---------- User: book a trek ----------
+@app.route("/user/treks/<int:trek_id>/book", methods=["POST"])
+@role_required("Trekker")
+def user_book_trek(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+
+    if trek.status != "Open":
+        flash("This trek is not open for booking.")
+        return redirect(url_for("user_treks"))
+
+    if trek.available_slots <= 0:
+        flash("This trek is fully booked.")
+        return redirect(url_for("user_treks"))
+
+    existing = Booking.query.filter_by(
+        user_id=session["user_id"], trek_id=trek.id, booking_status="Booked"
+    ).first()
+    if existing:
+        flash("You have already booked this trek.")
+        return redirect(url_for("user_treks"))
+
+    booking = Booking(
+        user_id=session["user_id"],
+        trek_id=trek.id,
+        booking_status="Booked",
+        payment_status="Pending",
+    )
+    trek.available_slots -= 1
+    db.session.add(booking)
+    db.session.commit()
+    flash("Trek booked successfully.")
+    return redirect(url_for("user_dashboard"))
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

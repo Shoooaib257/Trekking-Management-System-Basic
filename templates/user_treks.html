@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browse Treks</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-box wide">
+        <h2>Available Treks</h2>
+        <a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<ul class="flash">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% endwith %}
+
+        <form method="GET">
+            <label>Difficulty</label>
+            <select name="difficulty">
+                <option value="">-- Any --</option>
+                {% for d in ['Easy', 'Moderate', 'Hard'] %}
+                <option value="{{ d }}" {% if difficulty == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Location</label>
+            <input type="text" name="location" value="{{ location }}" placeholder="e.g. Madras">
+
+            <button type="submit">Filter</button>
+        </form>
+
+        <table>
+            <tr><th>Trek</th><th>Location</th><th>Difficulty</th><th>Duration</th><th>Slots</th><th>Action</th></tr>
+            {% for trek in treks %}
+            <tr>
+                <td>{{ trek.trek_name }}</td>
+                <td>{{ trek.location }}</td>
+                <td>{{ trek.difficulty }}</td>
+                <td>{{ trek.duration }} days</td>
+                <td>{{ trek.available_slots }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('user_book_trek', trek_id=trek.id) }}" style="display:inline">
+                        <button type="submit"
+                            {% if trek.id in booked_trek_ids or trek.available_slots <= 0 %}disabled{% endif %}>
+                            {% if trek.id in booked_trek_ids %}Booked
+                            {% elif trek.available_slots <= 0 %}Full
+                            {% else %}Book{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No open treks match your search.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
