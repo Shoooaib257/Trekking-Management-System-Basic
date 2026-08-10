@@ -1,0 +1,332 @@
+openapi: 3.0.0
+info:
+  title: Trekking Management Application
+  description: >
+    Role-based Flask web app for managing trekking activities.
+    Routes render server-side HTML (Jinja2) rather than JSON;
+    this spec documents them as resource endpoints for reference.
+  version: "1.0.0"
+
+paths:
+  /register:
+    get:
+      summary: Show registration form
+      responses:
+        '200':
+          description: Registration page rendered
+    post:
+      summary: Register as Trekker or Trek Staff
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+                role: { type: string, enum: [Trekker, "Trek Staff"] }
+                phone: { type: string }
+                experience: { type: string }
+                specialization: { type: string }
+      responses:
+        '302':
+          description: Redirect to login on success, or back to register on duplicate email
+
+  /login:
+    get:
+      summary: Show login form
+      responses:
+        '200':
+          description: Login page rendered
+    post:
+      summary: Authenticate and redirect based on role
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '302':
+          description: Redirect to role-specific dashboard, or back to login on failure
+
+  /logout:
+    get:
+      summary: Clear session and redirect to login
+      responses:
+        '302':
+          description: Redirect to login
+
+  /admin/dashboard:
+    get:
+      summary: Admin dashboard with stats
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Total treks, users, staff, bookings
+
+  /admin/treks:
+    get:
+      summary: List all treks
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: List of treks rendered
+
+  /admin/treks/add:
+    get:
+      summary: Show add-trek form
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Form rendered
+    post:
+      summary: Create a new trek
+      security: [{ sessionAuth: [] }]
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                trek_name: { type: string }
+                location: { type: string }
+                difficulty: { type: string, enum: [Easy, Moderate, Hard] }
+                duration: { type: integer }
+                available_slots: { type: integer }
+                assigned_staff_id: { type: integer }
+                status: { type: string, enum: [Pending, Approved, Open, Closed, Completed] }
+                start_date: { type: string, format: date }
+                end_date: { type: string, format: date }
+      responses:
+        '302':
+          description: Redirect to trek list
+
+  /admin/treks/edit/{trek_id}:
+    parameters:
+      - name: trek_id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      summary: Show edit-trek form
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Form rendered with existing values
+    post:
+      summary: Update a trek
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to trek list
+
+  /admin/treks/delete/{trek_id}:
+    parameters:
+      - name: trek_id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      summary: Delete a trek
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to trek list
+
+  /admin/staff:
+    get:
+      summary: List all trek staff
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Staff list rendered
+
+  /admin/staff/status/{user_id}/{action}:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: action
+        in: path
+        required: true
+        schema: { type: string, enum: [approve, blacklist, deactivate] }
+    post:
+      summary: Update a staff member's status
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to staff list
+
+  /admin/users:
+    get:
+      summary: List all trekkers
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: User list rendered
+
+  /admin/users/status/{user_id}/{action}:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: action
+        in: path
+        required: true
+        schema: { type: string, enum: [blacklist, deactivate, reactivate] }
+    post:
+      summary: Update a trekker's status
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to user list
+
+  /admin/search:
+    get:
+      summary: Search treks, staff, or users by name/ID
+      security: [{ sessionAuth: [] }]
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: type
+          in: query
+          schema: { type: string, enum: [treks, staff, users] }
+      responses:
+        '200':
+          description: Search results rendered
+
+  /admin/bookings:
+    get:
+      summary: View all booking records
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: All bookings rendered
+
+  /staff/dashboard:
+    get:
+      summary: Staff's assigned treks with trekker counts
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Dashboard rendered
+
+  /staff/profile:
+    get:
+      summary: Show staff profile edit form
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Form rendered
+    post:
+      summary: Update staff profile
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to profile page
+
+  /staff/treks/{trek_id}:
+    parameters:
+      - name: trek_id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      summary: View assigned trek detail and participants
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Trek detail rendered
+        '302':
+          description: Redirect if not the assigned staff, or trek doesn't exist
+    post:
+      summary: Update trek slots/status
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to trek detail
+
+  /staff/treks/{trek_id}/participant/{booking_id}/{action}:
+    parameters:
+      - name: trek_id
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: booking_id
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: action
+        in: path
+        required: true
+        schema: { type: string, enum: [complete, cancel] }
+    post:
+      summary: Update a participant's booking status
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to trek detail
+
+  /user/dashboard:
+    get:
+      summary: Trekker's bookings and trekking history
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Dashboard rendered
+
+  /user/profile:
+    get:
+      summary: Show trekker profile edit form
+      security: [{ sessionAuth: [] }]
+      responses:
+        '200':
+          description: Form rendered
+    post:
+      summary: Update trekker profile
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to profile page
+
+  /user/treks:
+    get:
+      summary: Browse and filter open treks
+      security: [{ sessionAuth: [] }]
+      parameters:
+        - name: difficulty
+          in: query
+          schema: { type: string, enum: [Easy, Moderate, Hard] }
+        - name: location
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Filtered trek list rendered
+
+  /user/treks/{trek_id}/book:
+    parameters:
+      - name: trek_id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      summary: Book a trek (rejected if not Open, full, or duplicate)
+      security: [{ sessionAuth: [] }]
+      responses:
+        '302':
+          description: Redirect to dashboard on success, or trek list with a flash message on rejection
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: session
